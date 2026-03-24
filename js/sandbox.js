@@ -4,9 +4,17 @@
  *   AIO_RUNTIME_NAMESPACE=my-ns \
  *   AIO_RUNTIME_API_KEY=uuid:key \
  *   node sandbox.js
+ *
+ * After setup, an interactive prompt lets you run commands on the sandbox.
+ * Type "exit" or "quit" to destroy the sandbox and exit.
  */
 
 const { init } = require('@adobe/aio-lib-runtime')
+const readline = require('readline')
+
+function prompt (rl, question) {
+  return new Promise(resolve => rl.question(question, resolve))
+}
 
 async function main () {
   const runtime = await init({
@@ -37,6 +45,26 @@ async function main () {
   await sandbox.writeFile('hello.js', `console.log('hello from sandbox')\n`)
   const { stdout: out } = await sandbox.exec('node hello.js', { timeout: 10000 })
   console.log(out.trim())
+
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+  console.log('\nSandbox ready. Type a command to execute, or "exit"/"quit" to destroy and exit.\n')
+
+  while (true) {
+    const cmd = await prompt(rl, '> ')
+    if (cmd.trim() === 'exit' || cmd.trim() === 'quit') {
+      rl.close()
+      break
+    }
+    if (!cmd.trim()) continue
+    try {
+      const result = await sandbox.exec(cmd, { timeout: 30000 })
+      if (result.stdout) process.stdout.write(result.stdout)
+      if (result.stderr) process.stderr.write(result.stderr)
+      console.log(`[exit: ${result.exitCode}]`)
+    } catch (err) {
+      console.error('exec error:', err.message)
+    }
+  }
 
   await sandbox.destroy()
   console.log('destroyed')
