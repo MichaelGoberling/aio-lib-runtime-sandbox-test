@@ -6,7 +6,10 @@ Node.js example using `@adobe/aio-lib-runtime` to create, use, and destroy a com
 
 ```bash
 npm install
+cp .env.example .env
 ```
+
+Edit `.env` with your Adobe I/O Runtime credentials.
 
 ## Run
 
@@ -14,7 +17,7 @@ npm install
 node sandbox.js
 ```
 
-Override defaults via env vars:
+Env vars can also be set inline instead of using a `.env` file:
 
 ```bash
 AIO_RUNTIME_APIHOST=https://... \

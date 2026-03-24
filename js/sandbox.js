@@ -1,14 +1,15 @@
 /*
- * Usage (env vars override hardcoded defaults):
- *   AIO_RUNTIME_APIHOST=https://... \
- *   AIO_RUNTIME_NAMESPACE=my-ns \
- *   AIO_RUNTIME_API_KEY=uuid:key \
+ * Copy .env.example to .env and fill in your credentials, then run:
  *   node sandbox.js
+ *
+ * Env vars can also be set inline:
+ *   AIO_RUNTIME_APIHOST=https://... AIO_RUNTIME_NAMESPACE=my-ns AIO_RUNTIME_API_KEY=uuid:key node sandbox.js
  *
  * After setup, an interactive prompt lets you run commands on the sandbox.
  * Type "exit" or "quit" to destroy the sandbox and exit.
  */
 
+require('dotenv').config()
 const { init } = require('@adobe/aio-lib-runtime')
 const readline = require('readline')
 

@@ -1,1 +1,2 @@
 git+https://github.com/MichaelGoberling/aio-lib-runtime-python.git
+python-dotenv

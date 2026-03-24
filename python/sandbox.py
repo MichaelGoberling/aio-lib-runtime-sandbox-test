@@ -3,10 +3,11 @@ Create a compute sandbox, run some setup commands, then drop into an interactive
 prompt where you can run arbitrary commands on the sandbox.
 
 Usage:
-    AIO_RUNTIME_APIHOST=https://... \
-    AIO_RUNTIME_NAMESPACE=my-ns \
-    AIO_RUNTIME_API_KEY=uuid:key \
-    python sandbox.py
+    Copy .env.example to .env, fill in your credentials, then run:
+        python sandbox.py
+
+    Env vars can also be set inline:
+        AIO_RUNTIME_APIHOST=https://... AIO_RUNTIME_NAMESPACE=my-ns AIO_RUNTIME_API_KEY=uuid:key python sandbox.py
 
 Type "exit" or "quit" at the prompt to destroy the sandbox and exit.
 """
@@ -14,6 +15,10 @@ Type "exit" or "quit" at the prompt to destroy the sandbox and exit.
 import asyncio
 import os
 import sys
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from aio_runtime import init
 
