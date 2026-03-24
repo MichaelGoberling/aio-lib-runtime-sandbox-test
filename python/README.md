@@ -14,3 +14,5 @@ pip install -r requirements.txt
 ```bash
 python sandbox.py
 ```
+
+> Note: May need to use python3 if on MacOS
