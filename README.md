@@ -1,2 +1,8 @@
 # aio-lib-runtime-sandbox-test
-Show how to use sandboxes with runtime
+
+Minimal examples using the sandbox API from Adobe Runtime.
+
+| Example | Description |
+|---------|-------------|
+| [`js/`](js/) | Node.js — uses `@adobe/aio-lib-runtime` |
+| [`python/`](python/) | Python — uses `aio_runtime` |
