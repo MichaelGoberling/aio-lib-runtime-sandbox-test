@@ -18,6 +18,16 @@ Edit `.env` with your Adobe I/O Runtime credentials.
 python sandbox.py
 ```
 
+### Network Policy Example
+
+Demonstrates the three network-policy modes (specific egress rules, allow-all, default-deny):
+
+```bash
+python sandbox_network_policy.py
+```
+
+### Env Vars
+
 Env vars can also be set inline instead of using a `.env` file:
 
 ```bash
