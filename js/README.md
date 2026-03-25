@@ -22,6 +22,6 @@ Env vars can also be set inline instead of using a `.env` file:
 ```bash
 AIO_RUNTIME_APIHOST=https://... \
 AIO_RUNTIME_NAMESPACE=my-ns \
-AIO_RUNTIME_API_KEY=uuid:key \
+AIO_RUNTIME_AUTH=uuid:key \
 node sandbox.js
 ```

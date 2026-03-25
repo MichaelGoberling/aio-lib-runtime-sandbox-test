@@ -3,7 +3,7 @@
  *   node sandbox.js
  *
  * Env vars can also be set inline:
- *   AIO_RUNTIME_APIHOST=https://... AIO_RUNTIME_NAMESPACE=my-ns AIO_RUNTIME_API_KEY=uuid:key node sandbox.js
+ *   AIO_RUNTIME_APIHOST=https://... AIO_RUNTIME_NAMESPACE=my-ns AIO_RUNTIME_AUTH=uuid:key node sandbox.js
  *
  * After setup, an interactive prompt lets you run commands on the sandbox.
  * Type "exit" or "quit" to destroy the sandbox and exit.
@@ -21,7 +21,7 @@ async function main () {
   const runtime = await init({
     apihost: process.env.AIO_RUNTIME_APIHOST || 'http://localhost:8080',
     namespace: process.env.AIO_RUNTIME_NAMESPACE || 'namespace',
-    api_key: process.env.AIO_RUNTIME_API_KEY || 'auth'
+    api_key: process.env.AIO_RUNTIME_AUTH || 'auth'
   })
 
   const sandbox = await runtime.compute.sandbox.create({

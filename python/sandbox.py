@@ -7,7 +7,7 @@ Usage:
         python sandbox.py
 
     Env vars can also be set inline:
-        AIO_RUNTIME_APIHOST=https://... AIO_RUNTIME_NAMESPACE=my-ns AIO_RUNTIME_API_KEY=uuid:key python sandbox.py
+        AIO_RUNTIME_APIHOST=https://... AIO_RUNTIME_NAMESPACE=my-ns AIO_RUNTIME_AUTH=uuid:key python sandbox.py
 
 Type "exit" or "quit" at the prompt to destroy the sandbox and exit.
 """
@@ -31,7 +31,7 @@ async def main() -> None:
     runtime = await init(
         api_host=os.environ.get("AIO_RUNTIME_APIHOST", "http://localhost:8080"),
         namespace=os.environ.get("AIO_RUNTIME_NAMESPACE", "namespace"),
-        api_key=os.environ.get("AIO_RUNTIME_API_KEY", "auth"),
+        api_key=os.environ.get("AIO_RUNTIME_AUTH", "auth"),
     )
 
     sandbox = await runtime.compute.sandbox.create(
