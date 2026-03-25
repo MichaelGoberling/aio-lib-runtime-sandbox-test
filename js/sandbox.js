@@ -11,7 +11,7 @@
 
 require('dotenv').config()
 const { init } = require('@adobe/aio-lib-runtime')
-const readline = require('readline')
+const readline = require('node:readline')
 
 function prompt (rl, question) {
   return new Promise(resolve => rl.question(question, resolve))
