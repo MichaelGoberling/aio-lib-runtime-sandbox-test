@@ -35,10 +35,9 @@ async def main() -> None:
     )
 
     sandbox = await runtime.compute.sandbox.create(
-        region="us-east-1",
         name="my-sandbox",
         size="MEDIUM",
-        type="cpu:python",
+        type="cpu:nodejs",
         workspace="workspace",
         max_lifetime=3600,
         envs={"API_KEY": "your-api-key"},
