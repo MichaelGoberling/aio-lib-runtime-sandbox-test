@@ -25,9 +25,7 @@ async function main () {
   })
 
   const sandbox = await runtime.compute.sandbox.create({
-    region: 'us-east-1',
     name: 'my-sandbox',
-    size: 'MEDIUM',
     type: 'cpu:nodejs',
     workspace: 'workspace',
     maxLifetime: 3600,

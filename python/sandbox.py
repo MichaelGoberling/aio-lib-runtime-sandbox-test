@@ -36,7 +36,6 @@ async def main() -> None:
 
     sandbox = await runtime.compute.sandbox.create(
         name="my-sandbox",
-        size="MEDIUM",
         type="cpu:nodejs",
         workspace="workspace",
         max_lifetime=3600,
