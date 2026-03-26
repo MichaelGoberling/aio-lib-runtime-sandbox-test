@@ -5,6 +5,9 @@
  * Env vars can also be set inline:
  *   AIO_RUNTIME_APIHOST=https://... AIO_RUNTIME_NAMESPACE=my-ns AIO_RUNTIME_AUTH=uuid:key node sandbox.js
  *
+ * Includes a simple network policy that only allows egress to httpbin.org:443.
+ * See sandbox-network-policy.js for more detailed policy examples.
+ *
  * After setup, an interactive prompt lets you run commands on the sandbox.
  * Type "exit" or "quit" to destroy the sandbox and exit.
  */
@@ -31,9 +34,17 @@ async function main () {
     maxLifetime: 3600,
     envs: {
       API_KEY: 'your-api-key'
+    },
+    policy: {
+      network: {
+        egress: [
+          { host: 'httpbin.org', port: 443 }
+        ]
+      }
     }
   })
   console.log('created:', sandbox.id)
+  console.log('network policy: egress allowed to httpbin.org:443')
 
   const status = await runtime.compute.sandbox.getStatus(sandbox.id)
   console.log('status:', status)

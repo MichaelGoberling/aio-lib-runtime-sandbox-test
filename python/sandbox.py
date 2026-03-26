@@ -9,6 +9,9 @@ Usage:
     Env vars can also be set inline:
         AIO_RUNTIME_APIHOST=https://... AIO_RUNTIME_NAMESPACE=my-ns AIO_RUNTIME_AUTH=uuid:key python sandbox.py
 
+Includes a simple network policy that only allows egress to httpbin.org:443.
+See sandbox_network_policy.py for more detailed policy examples.
+
 Type "exit" or "quit" at the prompt to destroy the sandbox and exit.
 """
 
@@ -40,8 +43,16 @@ async def main() -> None:
         workspace="workspace",
         max_lifetime=3600,
         envs={"API_KEY": "your-api-key"},
+        policy={
+            "network": {
+                "egress": [
+                    {"host": "httpbin.org", "port": 443},
+                ]
+            }
+        },
     )
     print("sandbox ready:", sandbox.id)
+    print("network policy: egress allowed to httpbin.org:443")
 
     status = await runtime.compute.sandbox.get_status(sandbox.id)
     print("status:", status)
