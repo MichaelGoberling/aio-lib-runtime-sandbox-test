@@ -11,7 +11,7 @@
  */
 
 require('dotenv').config()
-const { init } = require('@adobe/aio-lib-runtime')
+const { init, SandboxSandboxNetworkPolicy } = require('@adobe/aio-lib-runtime')
 
 const CURL_TIMEOUT = 15000
 const CURL_STATUS = 'curl -s -o /dev/null -w "%{http_code}"'
@@ -54,6 +54,92 @@ async function testSpecificEgress (compute) {
       { timeout: CURL_TIMEOUT }
     )
     console.log(`  example.com   (blocked) → ${blocked.stdout.trim()}`)
+  } finally {
+    await sandbox.destroy()
+    console.log('Sandbox destroyed.')
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Example 1b — Using SandboxNetworkPolicy.base
+//   Includes GitHub, PyPI, npm, Anthropic, OpenAI out of the box.
+// ---------------------------------------------------------------------------
+
+async function testBasePolicy (compute) {
+  console.log('\n--- SandboxNetworkPolicy.base ---')
+
+  const sandbox = await compute.sandbox.create({
+    name: 'policy-base',
+    type: 'cpu:nodejs',
+    workspace: 'policy-test',
+    maxLifetime: 300,
+    policy: {
+      network: SandboxNetworkPolicy.base
+    }
+  })
+  console.log(`Created sandbox: ${sandbox.id}`)
+
+  try {
+    const github = await sandbox.exec(
+      `${CURL_STATUS} https://api.github.com/`,
+      { timeout: CURL_TIMEOUT }
+    )
+    console.log(`  api.github.com (base) → HTTP ${github.stdout.trim()}`)
+
+    const pypi = await sandbox.exec(
+      `${CURL_STATUS} https://pypi.org/simple/`,
+      { timeout: CURL_TIMEOUT }
+    )
+    console.log(`  pypi.org       (base) → HTTP ${pypi.stdout.trim()}`)
+
+    const blocked = await sandbox.exec(
+      `${CURL_STATUS_WITH_TIMEOUT} https://example.com || echo "BLOCKED"`,
+      { timeout: CURL_TIMEOUT }
+    )
+    console.log(`  example.com  (blocked) → ${blocked.stdout.trim()}`)
+  } finally {
+    await sandbox.destroy()
+    console.log('Sandbox destroyed.')
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Example 1c — Composing multiple presets
+//   Merge egress arrays from individual service policies.
+// ---------------------------------------------------------------------------
+
+async function testComposedPolicy (compute) {
+  console.log('\n--- Composed policy (github + pypi + ad-hoc) ---')
+
+  const sandbox = await compute.sandbox.create({
+    name: 'policy-composed',
+    type: 'cpu:nodejs',
+    workspace: 'policy-test',
+    maxLifetime: 300,
+    policy: {
+      network: {
+        egress: [
+          ...SandboxNetworkPolicy.github.egress,
+          ...SandboxNetworkPolicy.pypi.egress,
+          { host: 'httpbin.org', port: 443 }
+        ]
+      }
+    }
+  })
+  console.log(`Created sandbox: ${sandbox.id}`)
+
+  try {
+    const github = await sandbox.exec(
+      `${CURL_STATUS} https://api.github.com/`,
+      { timeout: CURL_TIMEOUT }
+    )
+    console.log(`  api.github.com  (github) → HTTP ${github.stdout.trim()}`)
+
+    const httpbin = await sandbox.exec(
+      `${CURL_STATUS} https://httpbin.org/get`,
+      { timeout: CURL_TIMEOUT }
+    )
+    console.log(`  httpbin.org    (ad-hoc) → HTTP ${httpbin.stdout.trim()}`)
   } finally {
     await sandbox.destroy()
     console.log('Sandbox destroyed.')
@@ -128,6 +214,8 @@ async function main () {
   })
 
   await testSpecificEgress(runtime.compute)
+  await testBasePolicy(runtime.compute)
+  await testComposedPolicy(runtime.compute)
   await testAllowAll(runtime.compute)
   await testDefaultDeny(runtime.compute)
 }

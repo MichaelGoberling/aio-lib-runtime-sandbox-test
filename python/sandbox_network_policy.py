@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from aio_runtime import init
+from aio_runtime import init, SandboxNetworkPolicy
 
 CURL_TIMEOUT = 15_000
 CURL_STATUS = 'curl -s -o /dev/null -w "%{http_code}"'
@@ -61,6 +61,88 @@ async def test_specific_egress(compute) -> None:
             timeout=CURL_TIMEOUT,
         )
         print(f"  example.com   (blocked) -> {blocked.stdout.strip()}")
+    finally:
+        await sandbox.destroy()
+        print("Sandbox destroyed.")
+
+
+# ---------------------------------------------------------------------------
+# Example 1b — Using SandboxNetworkPolicy.base
+#   Includes GitHub, PyPI, npm, Anthropic, OpenAI out of the box.
+# ---------------------------------------------------------------------------
+
+
+async def test_base_policy(compute) -> None:
+    print("\n--- SandboxNetworkPolicy.base ---")
+
+    sandbox = await compute.sandbox.create(
+        name="policy-base",
+        workspace="policy-test",
+        max_lifetime=300,
+        policy={"network": SandboxNetworkPolicy.base},
+    )
+    print(f"Created sandbox: {sandbox.id}")
+
+    try:
+        github = await sandbox.exec(
+            f"{CURL_STATUS} https://api.github.com/",
+            timeout=CURL_TIMEOUT,
+        )
+        print(f"  api.github.com (base) -> HTTP {github.stdout.strip()}")
+
+        pypi = await sandbox.exec(
+            f"{CURL_STATUS} https://pypi.org/simple/",
+            timeout=CURL_TIMEOUT,
+        )
+        print(f"  pypi.org       (base) -> HTTP {pypi.stdout.strip()}")
+
+        blocked = await sandbox.exec(
+            f'{CURL_STATUS_WITH_TIMEOUT} https://example.com || echo "BLOCKED"',
+            timeout=CURL_TIMEOUT,
+        )
+        print(f"  example.com  (blocked) -> {blocked.stdout.strip()}")
+    finally:
+        await sandbox.destroy()
+        print("Sandbox destroyed.")
+
+
+# ---------------------------------------------------------------------------
+# Example 1c — Composing multiple policies
+#   Merge egress arrays from individual service policies.
+# ---------------------------------------------------------------------------
+
+
+async def test_composed_policy(compute) -> None:
+    print("\n--- Composed policy (github + pypi + ad-hoc) ---")
+
+    sandbox = await compute.sandbox.create(
+        name="policy-composed",
+        workspace="policy-test",
+        max_lifetime=300,
+        policy={
+            "network": {
+                "egress": [
+                    *SandboxNetworkPolicy.github["egress"],
+                    *SandboxNetworkPolicy.pypi["egress"],
+                    {"host": "httpbin.org", "port": 443},
+                ]
+            }
+        },
+    )
+    print(f"Created sandbox: {sandbox.id}")
+
+    try:
+        github = await sandbox.exec(
+            f"{CURL_STATUS} https://api.github.com/",
+            timeout=CURL_TIMEOUT,
+        )
+        print(f"  api.github.com  (github) -> HTTP {github.stdout.strip()}")
+
+        httpbin = await sandbox.exec(
+            f"{CURL_STATUS} https://httpbin.org/get",
+            timeout=CURL_TIMEOUT,
+        )
+        print(f"  httpbin.org    (ad-hoc) -> HTTP {httpbin.stdout.strip()}")
     finally:
         await sandbox.destroy()
         print("Sandbox destroyed.")
@@ -133,6 +215,8 @@ async def main() -> None:
     )
 
     await test_specific_egress(runtime.compute)
+    await test_base_policy(runtime.compute)
+    await test_composed_policy(runtime.compute)
     await test_allow_all(runtime.compute)
     await test_default_deny(runtime.compute)
 
