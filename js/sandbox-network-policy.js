@@ -11,7 +11,7 @@
  */
 
 require('dotenv').config()
-const { init, SandboxSandboxNetworkPolicy } = require('@adobe/aio-lib-runtime')
+const { init, SandboxNetworkPolicy } = require('@adobe/aio-lib-runtime')
 
 const CURL_TIMEOUT = 15000
 const CURL_STATUS = 'curl -s -o /dev/null -w "%{http_code}"'
