@@ -28,6 +28,7 @@ async function testSpecificEgress (compute) {
 
   const sandbox = await compute.sandbox.create({
     name: 'policy-specific',
+    type: 'cpu:nodejs',
     workspace: 'policy-test',
     maxLifetime: 300,
     policy: {
@@ -69,6 +70,7 @@ async function testAllowAll (compute) {
 
   const sandbox = await compute.sandbox.create({
     name: 'policy-allow-all',
+    type: 'cpu:nodejs',
     workspace: 'policy-test',
     maxLifetime: 300,
     policy: { network: { egress: 'allow-all' } }
@@ -98,6 +100,7 @@ async function testDefaultDeny (compute) {
 
   const sandbox = await compute.sandbox.create({
     name: 'policy-default-deny',
+    type: 'cpu:nodejs',
     workspace: 'policy-test',
     maxLifetime: 300
   })
