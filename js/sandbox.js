@@ -56,6 +56,30 @@ async function main () {
   const { stdout: out } = await sandbox.exec('node hello.js', { timeout: 10000 })
   console.log(out.trim())
 
+  // Stdin to command at start
+  await sandbox.writeFile('upper.js', `
+    process.stdin.setEncoding('utf8');
+    let buf = '';
+    process.stdin.on('data', c => buf += c);
+    process.stdin.on('end', () => console.log(buf.toUpperCase()));
+  `)
+  const { stdout: upper } = await sandbox.exec('node upper.js', {
+    timeout: 10000,
+    stdin: 'hello from stdin\n'
+  })
+  console.log('exec stdin shortcut:', upper.trim())
+
+  // Stdin for running command
+  const catPromise = sandbox.exec('cat -n', { timeout: 10000 })
+  const catExecId = catPromise.execId
+  sandbox.writeStdin(catExecId, 'line one\n')
+  sandbox.writeStdin(catExecId, 'line two\n')
+  sandbox.closeStdin(catExecId)
+  const catResult = await catPromise
+  console.log('manual writeStdin/closeStdin:')
+  console.log(catResult.stdout.trim())
+  console.log(`[exit: ${catResult.exitCode}]`)
+
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
   console.log('\nSandbox ready. Type a command to execute, or "exit"/"quit" to destroy and exit.\n')
 

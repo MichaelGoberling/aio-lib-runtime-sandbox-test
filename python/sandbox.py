@@ -12,6 +12,9 @@ Usage:
 Includes a simple network policy that only allows egress to httpbin.org:443.
 See sandbox_network_policy.py for more detailed policy examples.
 
+Demonstrates write_stdin/close_stdin for piping data into a running command,
+both via the exec() stdin shortcut and manually.
+
 Type "exit" or "quit" at the prompt to destroy the sandbox and exit.
 """
 
@@ -72,6 +75,27 @@ async def main() -> None:
     print("stdout:", result2.stdout.strip())
     print("stderr:", result2.stderr.strip())
     print("exit code:", result2.exit_code)
+
+    # Stdin to command at start
+    await sandbox.write_file(
+        "upper.js",
+        "process.stdin.setEncoding('utf8');\n"
+        "let buf = '';\n"
+        "process.stdin.on('data', c => buf += c);\n"
+        "process.stdin.on('end', () => console.log(buf.toUpperCase()));\n",
+    )
+    upper = await sandbox.exec("node upper.js", timeout=10_000, stdin="hello from stdin\n")
+    print("exec stdin shortcut:", upper.stdout.strip())
+
+    # Stdin for running command
+    cat_task = sandbox.exec("cat -n", timeout=10_000)
+    await sandbox.write_stdin(cat_task.exec_id, "line one\n")
+    await sandbox.write_stdin(cat_task.exec_id, "line two\n")
+    await sandbox.close_stdin(cat_task.exec_id)
+    cat_result = await cat_task
+    print("manual write_stdin/close_stdin:")
+    print(cat_result.stdout.strip())
+    print(f"[exit: {cat_result.exit_code}]")
 
     loop = asyncio.get_event_loop()
     print("\nSandbox ready. Type a command to execute, or 'exit'/'quit' to destroy and exit.\n")
